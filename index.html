@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050816">
+<title>HoYoGacha Calc - Kalkulator Tabungan Gacha</title>
+<style>
+  /* ===== TEMA (semua gelap) ===== */
+  :root, [data-theme="kosmik"] {
+    --bg-deep: #050816; --bg-mid: #0b1230;
+    --glow1: #14226b; --glow2: #0a3a5c;
+    --a1: #00e5ff; --a1-rgb: 0, 229, 255;
+    --a2: #3d8bff; --a2-rgb: 61, 139, 255;
+    --card: rgba(15, 23, 51, 0.85);
+    --input-bg: rgba(5, 8, 22, 0.8);
+    --option-bg: #0b1230;
+    --btn-text: #021019;
+  }
+  [data-theme="nebula"] {
+    --bg-deep: #0a0517; --bg-mid: #170c33;
+    --glow1: #3b1478; --glow2: #5c0f4f;
+    --a1: #d38cff; --a1-rgb: 211, 140, 255;
+    --a2: #ff5fd2; --a2-rgb: 255, 95, 210;
+    --card: rgba(26, 13, 51, 0.85);
+    --input-bg: rgba(10, 5, 23, 0.8);
+    --option-bg: #170c33;
+    --btn-text: #14061f;
+  }
+  [data-theme="emas"] {
+    --bg-deep: #0d0a05; --bg-mid: #1c1409;
+    --glow1: #5a3d0a; --glow2: #3d1f0a;
+    --a1: #ffd166; --a1-rgb: 255, 209, 102;
+    --a2: #ff9f43; --a2-rgb: 255, 159, 67;
+    --card: rgba(31, 22, 11, 0.85);
+    --input-bg: rgba(13, 10, 5, 0.8);
+    --option-bg: #1c1409;
+    --btn-text: #1f1202;
+  }
+  [data-theme="matrix"] {
+    --bg-deep: #02100b; --bg-mid: #05201a;
+    --glow1: #0b5a3a; --glow2: #08403f;
+    --a1: #3dffb0; --a1-rgb: 61, 255, 176;
+    --a2: #2dd4ff; --a2-rgb: 45, 212, 255;
+    --card: rgba(6, 28, 22, 0.85);
+    --input-bg: rgba(2, 16, 11, 0.8);
+    --option-bg: #05201a;
+    --btn-text: #02150d;
+  }
+
+  :root {
+    --text: #e6f1ff;
+    --muted: #8fa3c8;
+    --ok: #3dffb0;
+    --warn: #ffcc4d;
+    --bad: #ff6b8b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+
+  body {
+    font-family: "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(ellipse at 20% 0%, var(--glow1) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 100%, var(--glow2) 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg-deep), var(--bg-mid));
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 16px 12px 40px;
+    overflow-x: hidden;
+    transition: background 0.4s;
+  }
+
+  /* Bintang-bintang */
+  body::before, body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-repeat: repeat;
+  }
+  body::before {
+    background-image:
+      radial-gradient(1.5px 1.5px at 20px 30px, #fff, transparent),
+      radial-gradient(1px 1px at 80px 120px, #cfe9ff, transparent),
+      radial-gradient(1.5px 1.5px at 150px 60px, #fff, transparent),
+      radial-gradient(1px 1px at 210px 170px, #dfe6ff, transparent);
+    background-size: 240px 200px;
+    opacity: 0.55;
+    animation: twinkle 6s ease-in-out infinite alternate;
+  }
+  body::after {
+    background-image:
+      radial-gradient(1px 1px at 50px 90px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 130px 20px, #cfe9ff, transparent),
+      radial-gradient(1px 1px at 190px 140px, #fff, transparent);
+    background-size: 300px 260px;
+    opacity: 0.4;
+    animation: twinkle 9s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes twinkle { from { opacity: 0.2; } to { opacity: 0.7; } }
+
+  /* ===== OPENING ===== */
+  #intro {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+    background:
+      radial-gradient(ellipse at 50% 40%, var(--glow1) 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg-deep), var(--bg-mid));
+    cursor: pointer;
+    transition: opacity 0.6s ease, visibility 0.6s;
+  }
+  #intro.hide { opacity: 0; visibility: hidden; }
+  .intro-star {
+    font-size: 2.6rem;
+    color: var(--a1);
+    text-shadow: 0 0 25px rgba(var(--a1-rgb), 0.8);
+    animation: spin 5s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .intro-title {
+    font-size: clamp(1.8rem, 9vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, var(--a1), var(--a2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .intro-sub { font-size: 0.95rem; color: var(--muted); }
+  .intro-tap {
+    margin-top: 18px;
+    font-size: 0.8rem;
+    color: var(--a1);
+    letter-spacing: 2px;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.25; } }
+
+  /* ===== KARTU ===== */
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    margin-top: 8px;
+    padding: 22px 18px 24px;
+    background: var(--card);
+    border: 1px solid rgba(var(--a1-rgb), 0.25);
+    border-radius: 24px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 30px rgba(var(--a1-rgb), 0.12), 0 20px 50px rgba(0, 0, 0, 0.55);
+    transition: background 0.4s, border-color 0.4s;
+  }
+
+  header { text-align: center; margin-bottom: 14px; }
+
+  .logo {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, var(--a1), var(--a2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .tagline { margin-top: 4px; font-size: 0.85rem; color: var(--muted); }
+
+  /* Tombol & panel tema (khusus, melayang di pojok kanan atas) */
+  #themeBtn {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 50;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--a1);
+    background: var(--card);
+    border: 1px solid rgba(var(--a1-rgb), 0.4);
+    border-radius: 50%;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 16px rgba(var(--a1-rgb), 0.3);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s;
+  }
+  #themeBtn:active { transform: scale(0.92); }
+
+  #themePanel {
+    position: fixed;
+    top: 64px;
+    right: 12px;
+    z-index: 50;
+    width: 190px;
+    padding: 10px;
+    background: var(--card);
+    border: 1px solid rgba(var(--a1-rgb), 0.35);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(var(--a1-rgb), 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  }
+  #themePanel.open { opacity: 1; visibility: visible; transform: translateY(0); }
+  .panel-title {
+    padding: 2px 6px 8px;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .opt:last-child { margin-bottom: 0; }
+  .opt.active { background: rgba(var(--a1-rgb), 0.12); border-color: rgba(var(--a1-rgb), 0.4); }
+  .swatch { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
+  .opt[data-t="kosmik"] .swatch { background: linear-gradient(135deg, #00e5ff, #3d8bff); }
+  .opt[data-t="nebula"] .swatch { background: linear-gradient(135deg, #d38cff, #ff5fd2); }
+  .opt[data-t="emas"] .swatch   { background: linear-gradient(135deg, #ffd166, #ff9f43); }
+  .opt[data-t="matrix"] .swatch { background: linear-gradient(135deg, #3dffb0, #2dd4ff); }
+
+  .ad-space {
+    width: 100%;
+    min-height: 60px;
+    margin: 14px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .field { margin-bottom: 14px; }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--a1);
+    letter-spacing: 0.3px;
+  }
+
+  select, input {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 16px; /* cegah zoom otomatis di HP */
+    color: var(--text);
+    background: var(--input-bg);
+    border: 1px solid rgba(var(--a2-rgb), 0.35);
+    border-radius: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select {
+    background-image: linear-gradient(45deg, transparent 50%, var(--a1) 50%),
+                      linear-gradient(135deg, var(--a1) 50%, transparent 50%);
+    background-position: calc(100% - 20px) 55%, calc(100% - 14px) 55%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 38px;
+  }
+  select option { background: var(--option-bg); color: var(--text); }
+
+  select:focus, input:focus {
+    border-color: var(--a1);
+    box-shadow: 0 0 0 3px rgba(var(--a1-rgb), 0.18);
+  }
+  input::placeholder { color: #566a94; }
+
+  .hint { margin-top: 5px; font-size: 0.75rem; color: var(--muted); }
+
+  button#calcBtn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--btn-text);
+    background: linear-gradient(90deg, var(--a1), var(--a2));
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(var(--a1-rgb), 0.35);
+    transition: transform 0.15s, box-shadow 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button#calcBtn:hover { box-shadow: 0 0 30px rgba(var(--a1-rgb), 0.6); }
+  button#calcBtn:active { transform: scale(0.97); }
+
+  .error {
+    display: none;
+    margin-top: 12px;
+    padding: 11px 13px;
+    font-size: 0.85rem;
+    color: var(--bad);
+    background: rgba(255, 107, 139, 0.1);
+    border: 1px solid rgba(255, 107, 139, 0.4);
+    border-radius: 12px;
+  }
+
+  .result {
+    display: none;
+    margin-top: 6px;
+    padding: 16px;
+    background: rgba(var(--a1-rgb), 0.05);
+    border: 1px solid rgba(var(--a1-rgb), 0.25);
+    border-radius: 18px;
+    animation: pop 0.35s ease-out;
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result h2 {
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: var(--a1);
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(143, 163, 200, 0.25);
+    font-size: 0.9rem;
+  }
+  .stat:last-of-type { border-bottom: none; }
+  .stat span:first-child { color: var(--muted); }
+  .stat span:last-child { font-weight: 700; text-align: right; }
+
+  .good { color: var(--ok); }
+  .mid { color: var(--warn); }
+  .low { color: var(--bad); }
+  .accent { color: var(--a1); }
+
+  .advice {
+    margin-top: 12px;
+    padding: 13px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: rgba(var(--a2-rgb), 0.12);
+    border-left: 3px solid var(--a1);
+    border-radius: 10px;
+  }
+
+  .disclaimer {
+    margin-top: 12px;
+    font-size: 0.7rem;
+    line-height: 1.45;
+    font-style: italic;
+    color: var(--muted);
+    opacity: 0.85;
+  }
+
+  footer {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #566a94;
+  }
+
+  /* ===== LAYAR KOMPUTER / TABLET LEBAR (otomatis) ===== */
+  @media (min-width: 768px) {
+    body { padding: 48px 24px 60px; }
+
+    .card {
+      max-width: 800px;
+      margin-top: 0;
+      padding: 36px 40px 32px;
+      border-radius: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 24px;
+      align-items: start;
+    }
+    /* elemen yang memanjang penuh */
+    .card > header,
+    .card > .ad-space,
+    .card > button#calcBtn,
+    .card > .error,
+    .card > .result,
+    .card > footer { grid-column: 1 / -1; }
+
+    .field-wide { grid-column: 1 / -1; }
+
+    header { margin-bottom: 8px; }
+    .logo { font-size: 2.4rem; }
+    .tagline { font-size: 1rem; }
+
+    label { font-size: 0.9rem; }
+    select, input { padding: 14px 16px; }
+    .hint { font-size: 0.78rem; }
+
+    button#calcBtn { padding: 17px; font-size: 1.05rem; }
+
+    .result { padding: 22px 26px; }
+    .result h2 { font-size: 1.1rem; }
+    .stat { font-size: 0.98rem; padding: 12px 0; }
+    .advice { font-size: 0.98rem; }
+    .disclaimer { font-size: 0.75rem; }
+
+    #themeBtn { top: 20px; right: 24px; width: 48px; height: 48px; }
+    #themePanel { top: 78px; right: 24px; width: 210px; }
+    .opt:hover { background: rgba(var(--a1-rgb), 0.1); }
+    #themeBtn:hover { box-shadow: 0 0 24px rgba(var(--a1-rgb), 0.6); }
+  }
+
+  @media (min-width: 1200px) {
+    .card { max-width: 880px; }
+  }
+
+  @media (max-width: 360px) {
+    .card { padding: 18px 14px 20px; border-radius: 20px; }
+    .stat { font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- OPENING -->
+<div id="intro">
+  <div class="intro-star">✦</div>
+  <div class="intro-title">HoYoGacha Calc</div>
+  <div class="intro-sub">Tabung dulu, tarik kemudian.</div>
+  <div class="intro-tap">KETUK UNTUK MULAI</div>
+</div>
+
+<!-- TEMA (tombol khusus melayang) -->
+<button type="button" id="themeBtn" aria-label="Pilih tema" aria-expanded="false">🎨</button>
+<div id="themePanel" role="menu">
+  <div class="panel-title">PILIH TEMA</div>
+  <button type="button" class="opt" data-t="kosmik"><span class="swatch"></span>Kosmik</button>
+  <button type="button" class="opt" data-t="nebula"><span class="swatch"></span>Nebula</button>
+  <button type="button" class="opt" data-t="emas"><span class="swatch"></span>Emas</button>
+  <button type="button" class="opt" data-t="matrix"><span class="swatch"></span>Matrix</button>
+</div>
+
+<main class="card">
+  <header>
+    <h1 class="logo">✦ HoYoGacha Calc ✦</h1>
+    <p class="tagline">Kalkulator tabungan gacha untuk Traveler &amp; Trailblazer</p>
+  </header>
+
+  <!-- AREA IKLAN 1 (ATAS FORMULIR) -->
+  <div class="ad-space" id="ad-top">
+    <!-- TEMPEL KODE BANNER ADSTERRA DI SINI -->
+  </div>
+
+  <div class="field">
+    <label for="game">Pilih Game</label>
+    <select id="game">
+      <option value="genshin">Genshin Impact (Primogems)</option>
+      <option value="hsr">Honkai: Star Rail (Stellar Jade)</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="banner">Jenis Gacha</label>
+    <select id="banner">
+      <option value="char">Karakter</option>
+      <option value="weapon">Senjata</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="currency" id="currencyLabel">Jumlah Primogems Saat Ini</label>
+    <input type="number" id="currency" inputmode="numeric" min="0" step="1" placeholder="Contoh: 12800">
+  </div>
+
+  <div class="field">
+    <label for="pity" id="pityLabel">Posisi Pity Saat Ini (0 - 89)</label>
+    <input type="number" id="pity" inputmode="numeric" min="0" max="89" step="1" placeholder="Contoh: 45">
+    <p class="hint">Jumlah tarikan sejak terakhir mendapat bintang 5.</p>
+  </div>
+
+  <div class="field field-wide">
+    <label for="daily" id="dailyLabel">Penghasilan Harian (dari Quest Harian)</label>
+    <input type="number" id="daily" inputmode="numeric" min="1" step="1" value="60" placeholder="Contoh: 60">
+    <p class="hint">Standar 60 per hari dari quest harian. Ubah jika kamu punya tambahan, misalnya Welkin Moon atau Express Supply Pass (+90 per hari).</p>
+  </div>
+
+  <button id="calcBtn" type="button">🚀 Analisis Kesiapan Gacha</button>
+
+  <div class="error" id="errorBox"></div>
+
+  <!-- AREA IKLAN 2 (DI BAWAH TOMBOL HITUNG) -->
+  <div class="ad-space" id="ad-bottom">
+    <!-- TEMPEL KODE BANNER ADSTERRA DI SINI -->
+  </div>
+
+  <section class="result" id="resultBox" aria-live="polite">
+    <h2>HASIL ANALISIS</h2>
+    <div class="stat"><span id="rCurrencyName">Primogems</span><span id="rCurrency">-</span></div>
+    <div class="stat"><span>Tiket Gacha (160 poin/tiket)</span><span id="rTickets">-</span></div>
+    <div class="stat"><span id="rBannerName">Pity Saat Ini</span><span id="rPity">-</span></div>
+    <div class="stat"><span id="rSoftLabel">Kurang ke Soft Pity (75)</span><span id="rSoft">-</span></div>
+    <div class="stat"><span id="rHardLabel">Kurang ke Hard Pity (90)</span><span id="rHard">-</span></div>
+    <div class="stat"><span>Estimasi hari ke Soft Pity</span><span id="rDaysSoft">-</span></div>
+    <div class="stat"><span>Estimasi hari ke Hard Pity</span><span id="rDaysHard">-</span></div>
+    <div class="advice" id="rAdvice"></div>
+    <p class="disclaimer">*Catatan: Hitungan ini berdasarkan target tarikan pilihanmu. Jika faktor keberuntunganmu tinggi, kamu bisa mendapatkan karakternya lebih cepat dari estimasi hari di atas!</p>
+  </section>
+
+  <footer>Dibuat untuk para pemburu bintang 5 ✨ &bull; Tidak berafiliasi dengan HoYoverse</footer>
+</main>
+
+<script>
+  var TICKET_COST = 160;
+  var SOFT_PITY = 75;
+  var HARD_PITY = 90;
+
+  var gameSelect = document.getElementById("game");
+  var currencyLabel = document.getElementById("currencyLabel");
+  var currencyInput = document.getElementById("currency");
+  var pityInput = document.getElementById("pity");
+  var dailyInput = document.getElementById("daily");
+  var bannerSelect = document.getElementById("banner");
+  var pityLabel = document.getElementById("pityLabel");
+  var calcBtn = document.getElementById("calcBtn");
+  var errorBox = document.getElementById("errorBox");
+  var resultBox = document.getElementById("resultBox");
+
+  var GAMES = {
+    genshin: { currency: "Primogems" },
+    hsr: { currency: "Stellar Jade" }
+  };
+
+  /* Aturan pity tiap jenis gacha */
+  var BANNERS = {
+    genshin: {
+      char:   { name: "Karakter (Event Banner)", soft: 75, hard: 90 },
+      weapon: { name: "Senjata (Weapon Banner)", soft: 63, hard: 80 }
+    },
+    hsr: {
+      char:   { name: "Karakter (Event Warp)", soft: 75, hard: 90 },
+      weapon: { name: "Light Cone (Event Warp)", soft: 66, hard: 80 }
+    }
+  };
+
+  function currentBanner() {
+    return BANNERS[gameSelect.value][bannerSelect.value];
+  }
+
+  /* ===== Opening ===== */
+  var intro = document.getElementById("intro");
+  function closeIntro() { intro.classList.add("hide"); }
+  intro.addEventListener("click", closeIntro);
+  setTimeout(closeIntro, 2500);
+
+  /* ===== Tema ===== */
+  var dots = document.querySelectorAll(".opt");
+  var themeBtn = document.getElementById("themeBtn");
+  var themePanel = document.getElementById("themePanel");
+
+  function togglePanel(open) {
+    var willOpen = typeof open === "boolean" ? open : !themePanel.classList.contains("open");
+    themePanel.classList.toggle("open", willOpen);
+    themeBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  }
+  themeBtn.addEventListener("click", function (e) { e.stopPropagation(); togglePanel(); });
+  themePanel.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("click", function () { togglePanel(false); });
+  var THEME_COLORS = {
+    kosmik: "#050816", nebula: "#0a0517", emas: "#0d0a05", matrix: "#02100b"
+  };
+
+  function setTheme(name) {
+    if (!THEME_COLORS[name]) name = "kosmik";
+    document.documentElement.setAttribute("data-theme", name);
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", THEME_COLORS[name]);
+    dots.forEach(function (d) {
+      d.classList.toggle("active", d.getAttribute("data-t") === name);
+    });
+    try { localStorage.setItem("hoyogacha-theme", name); } catch (e) {}
+  }
+
+  dots.forEach(function (d) {
+    d.addEventListener("click", function () { setTheme(d.getAttribute("data-t")); togglePanel(false); });
+  });
+
+  var savedTheme = "kosmik";
+  try { savedTheme = localStorage.getItem("hoyogacha-theme") || "kosmik"; } catch (e) {}
+  setTheme(savedTheme);
+
+  /* ===== Kalkulator ===== */
+  function updateLabel() {
+    var g = GAMES[gameSelect.value];
+    currencyLabel.textContent = "Jumlah " + g.currency + " Saat Ini";
+
+    var set = BANNERS[gameSelect.value];
+    bannerSelect.options[0].textContent = set.char.name;
+    bannerSelect.options[1].textContent = set.weapon.name;
+    var b = currentBanner();
+    pityLabel.textContent = "Posisi Pity Saat Ini (0 - " + (b.hard - 1) + ")";
+    pityInput.max = b.hard - 1;
+    pityInput.placeholder = "Contoh: " + Math.floor(b.hard / 2);
+    document.getElementById("rSoftLabel").textContent = "Kurang ke Soft Pity (" + b.soft + ")";
+    document.getElementById("rHardLabel").textContent = "Kurang ke Hard Pity (" + b.hard + ")";
+    resultBox.style.display = "none";
+    errorBox.style.display = "none";
+  }
+
+  function showError(msg) {
+    errorBox.textContent = "⚠️ " + msg;
+    errorBox.style.display = "block";
+    resultBox.style.display = "none";
+  }
+
+  function fmt(n) { return n.toLocaleString("id-ID"); }
+
+  function shortage(n) {
+    return n > 0
+      ? '<span class="low">' + fmt(n) + " tiket lagi</span>"
+      : '<span class="good">Sudah cukup ✓</span>';
+  }
+
+  function fmtDays(d) {
+    if (d <= 0) return '<span class="good">Sudah cukup ✓</span>';
+    var txt = fmt(d) + " hari";
+    if (d >= 30) {
+      var bln = Math.floor(d / 30);
+      var sisa = d % 30;
+      txt += ' <small style="color:var(--muted);font-weight:400">(\u00b1 ' + bln + " bln" + (sisa ? " " + sisa + " hr" : "") + ")</small>";
+    }
+    return '<span class="accent">' + txt + "</span>";
+  }
+
+  function calculate() {
+    errorBox.style.display = "none";
+
+    var b = currentBanner();
+    var SOFT_PITY = b.soft;
+    var HARD_PITY = b.hard;
+
+    var rawCurrency = currencyInput.value.trim();
+    var rawPity = pityInput.value.trim();
+
+    if (rawCurrency === "" || rawPity === "") {
+      showError("Isi jumlah poin dan posisi pity terlebih dahulu.");
+      return;
+    }
+
+    var points = Number(rawCurrency);
+    var pity = Number(rawPity);
+
+    if (!isFinite(points) || points < 0 || Math.floor(points) !== points) {
+      showError("Jumlah poin harus berupa bilangan bulat 0 atau lebih.");
+      return;
+    }
+    if (!isFinite(pity) || pity < 0 || pity > HARD_PITY - 1 || Math.floor(pity) !== pity) {
+      showError("Posisi pity harus berupa angka bulat antara 0 hingga " + (HARD_PITY - 1) + ".");
+      return;
+    }
+
+    var rawDaily = dailyInput.value.trim();
+    var daily = rawDaily === "" ? 60 : Number(rawDaily);
+    if (!isFinite(daily) || daily < 1 || Math.floor(daily) !== daily) {
+      showError("Penghasilan harian harus berupa bilangan bulat minimal 1.");
+      return;
+    }
+
+    var g = GAMES[gameSelect.value];
+    var tickets = Math.floor(points / TICKET_COST);
+
+    var pullsToSoft = Math.max(0, SOFT_PITY - pity);
+    var pullsToHard = HARD_PITY - pity;
+
+    var lackSoft = Math.max(0, pullsToSoft - tickets);
+    var lackHard = Math.max(0, pullsToHard - tickets);
+
+    var needSoft = Math.max(0, pullsToSoft * TICKET_COST - points);
+    var needHard = Math.max(0, pullsToHard * TICKET_COST - points);
+    var daysSoft = Math.ceil(needSoft / daily);
+    var daysHard = Math.ceil(needHard / daily);
+
+    document.getElementById("rCurrencyName").textContent = g.currency;
+    document.getElementById("rCurrency").textContent = fmt(points);
+    document.getElementById("rTickets").innerHTML =
+      '<span class="accent">' + fmt(tickets) + " tiket</span>";
+    document.getElementById("rBannerName").textContent = "Pity " + b.name.split(" (")[0];
+    document.getElementById("rPity").textContent = pity + " / " + HARD_PITY;
+
+    document.getElementById("rSoft").innerHTML =
+      pity >= SOFT_PITY
+        ? '<span class="good">Sudah lewat Soft Pity 🔥</span>'
+        : shortage(lackSoft);
+    document.getElementById("rHard").innerHTML = shortage(lackHard);
+
+    document.getElementById("rDaysSoft").innerHTML =
+      pity >= SOFT_PITY
+        ? '<span class="good">Sudah lewat ✓</span>'
+        : fmtDays(daysSoft);
+    document.getElementById("rDaysHard").innerHTML = fmtDays(daysHard);
+
+    var advice;
+    if (tickets >= pullsToHard) {
+      advice = "🌟 <b>Siap menggila!</b> Tiketmu cukup untuk menembus Hard Pity, jadi bintang 5 sudah dijamin. Banner favoritmu sudah menunggu, Traveler!";
+    } else if (tickets >= pullsToSoft && pity < SOFT_PITY) {
+      advice = "✨ <b>Peluang sangat bagus!</b> Kamu sudah mencapai zona Soft Pity dan peluang bintang 5 naik drastis. Tinggal " + fmt(lackHard) + " tiket lagi untuk jaminan penuh. Kalau sabar, tabung sedikit lagi.";
+    } else if (pity >= SOFT_PITY) {
+      advice = "🔥 <b>Kamu sudah di zona Soft Pity!</b> Peluang bintang 5 sedang tinggi-tingginya. Tarik sekarang dengan " + fmt(tickets) + " tiketmu, atau tambah " + fmt(lackHard) + " tiket lagi untuk jaminan penuh.";
+    } else if (tickets >= pullsToSoft * 0.6) {
+      advice = "🌙 <b>Hampir sampai.</b> Kamu butuh " + fmt(lackSoft) + " tiket lagi (sekitar " + fmt(lackSoft * TICKET_COST) + " " + g.currency + ") untuk mencapai Soft Pity. Selesaikan misi harian dan event dulu, jangan tarik sekarang.";
+    } else if (tickets > 0) {
+      advice = "🚀 <b>Tabungan masih awal.</b> Kamu butuh " + fmt(lackSoft) + " tiket lagi untuk Soft Pity. Kumpulkan terus " + g.currency + " dari misi harian, eksplorasi, dan event. Sabar itu kunci!";
+    } else {
+      advice = "🛰️ <b>Tabungan masih kosong.</b> Mulai kumpulkan " + g.currency + " dari misi harian dan event. Setiap " + TICKET_COST + " poin sama dengan 1 tiket.";
+    }
+    document.getElementById("rAdvice").innerHTML = advice;
+
+    resultBox.style.display = "block";
+    resultBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  gameSelect.addEventListener("change", updateLabel);
+  bannerSelect.addEventListener("change", updateLabel);
+  calcBtn.addEventListener("click", calculate);
+  [currencyInput, pityInput, dailyInput].forEach(function (el) {
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") calculate();
+    });
+  });
+
+  updateLabel();
+</script>
+
+<!-- TEMPEL KODE POPUNDER ADSTERRA DI SINI -->
+</body>
+</html>
